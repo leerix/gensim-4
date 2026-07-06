@@ -1,7 +1,6 @@
 Pyro4==4.82
 Sphinx==9.1.0
 sphinx-rtd-theme==3.1.0
-annoy==1.17.3
 memory-profiler==0.61.0
 nltk==3.9.4
 pandas==3.0.3

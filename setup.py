@@ -276,6 +276,16 @@ if sys.version_info[:2] < (3, 14):
 else:
     visdom_req = []
 
+#
+# annoy has no wheels for recent Python versions and its source build is broken
+# on Python 3.14 (nearest-neighbour queries return incorrect results), so it is
+# excluded there. The AnnoyIndexer tests skip gracefully when it is absent.
+#
+if sys.version_info[:2] < (3, 14):
+    annoy_req = ['annoy']
+else:
+    annoy_req = []
+
 # packages included for build-testing everywhere
 core_testenv = [
     'pytest',
@@ -325,14 +335,13 @@ docs_testenv = core_testenv + distributed_env + visdom_req + [
     # standalone sphinxcontrib-napoleon package is no longer required.
     'matplotlib',  # expected by sphinx-gallery
     'memory_profiler',
-    'annoy',
     'Pyro4',
     'scikit-learn',
     'nltk',
     'testfixtures',
     'statsmodels',
     'pandas',
-]
+] + annoy_req
 
 NUMPY_STR = 'numpy >= 1.18.5'
 
