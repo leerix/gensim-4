@@ -37,11 +37,18 @@ Blog posts, tutorial videos, hackathons and other useful Gensim resources, from 
    - ? `Deep Inverse Regression with Yelp Reviews <https://github.com/RaRe-Technologies/gensim/blob/develop/docs/notebooks/deepir.ipynb>`__ (Document Classification using Bayesian Inversion and several word2vec models, one for each class)
 
 
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
 
 .. raw:: html
 
     <div class="sphx-glr-thumbnails">
 
+.. thumbnail-parent-div-open
+
+.. thumbnail-parent-div-close
 
 .. raw:: html
 

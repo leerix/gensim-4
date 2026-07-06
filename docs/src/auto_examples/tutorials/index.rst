@@ -8,22 +8,27 @@ Tutorials: Learning Oriented Lessons
 Learning-oriented lessons that introduce a particular gensim feature, e.g. a model (Word2Vec, FastText) or technique (similarity queries or text summarization).
 
 
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
 
 .. raw:: html
 
     <div class="sphx-glr-thumbnails">
 
+.. thumbnail-parent-div-open
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Introduces Gensim&#x27;s Word2Vec model and demonstrates its use on the `Lee Evaluation Corpus &lt;http...">
+    <div class="sphx-glr-thumbcontainer" tooltip="Introduces Gensim&#x27;s Word2Vec model and demonstrates its use on the Lee Evaluation Corpus.">
 
 .. only:: html
 
   .. image:: /auto_examples/tutorials/images/thumb/sphx_glr_run_word2vec_thumb.png
-    :alt: Word2Vec Model
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_tutorials_run_word2vec.py`
+  :doc:`/auto_examples/tutorials/run_word2vec`
 
 .. raw:: html
 
@@ -33,14 +38,14 @@ Learning-oriented lessons that introduce a particular gensim feature, e.g. a mod
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Introduces Gensim&#x27;s Doc2Vec model and demonstrates its use on the `Lee Corpus &lt;https://hekyll.s...">
+    <div class="sphx-glr-thumbcontainer" tooltip="Introduces Gensim&#x27;s Doc2Vec model and demonstrates its use on the Lee Corpus.">
 
 .. only:: html
 
   .. image:: /auto_examples/tutorials/images/thumb/sphx_glr_run_doc2vec_lee_thumb.png
-    :alt: Doc2Vec Model
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_tutorials_run_doc2vec_lee.py`
+  :doc:`/auto_examples/tutorials/run_doc2vec_lee`
 
 .. raw:: html
 
@@ -55,9 +60,9 @@ Learning-oriented lessons that introduce a particular gensim feature, e.g. a mod
 .. only:: html
 
   .. image:: /auto_examples/tutorials/images/thumb/sphx_glr_run_fasttext_thumb.png
-    :alt: FastText Model
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_tutorials_run_fasttext.py`
+  :doc:`/auto_examples/tutorials/run_fasttext`
 
 .. raw:: html
 
@@ -72,9 +77,9 @@ Learning-oriented lessons that introduce a particular gensim feature, e.g. a mod
 .. only:: html
 
   .. image:: /auto_examples/tutorials/images/thumb/sphx_glr_run_ensemblelda_thumb.png
-    :alt: Ensemble LDA
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_tutorials_run_ensemblelda.py`
+  :doc:`/auto_examples/tutorials/run_ensemblelda`
 
 .. raw:: html
 
@@ -89,9 +94,9 @@ Learning-oriented lessons that introduce a particular gensim feature, e.g. a mod
 .. only:: html
 
   .. image:: /auto_examples/tutorials/images/thumb/sphx_glr_run_annoy_thumb.png
-    :alt: Fast Similarity Queries with Annoy and Word2Vec
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_tutorials_run_annoy.py`
+  :doc:`/auto_examples/tutorials/run_annoy`
 
 .. raw:: html
 
@@ -106,9 +111,9 @@ Learning-oriented lessons that introduce a particular gensim feature, e.g. a mod
 .. only:: html
 
   .. image:: /auto_examples/tutorials/images/thumb/sphx_glr_run_lda_thumb.png
-    :alt: LDA Model
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_tutorials_run_lda.py`
+  :doc:`/auto_examples/tutorials/run_lda`
 
 .. raw:: html
 
@@ -123,9 +128,9 @@ Learning-oriented lessons that introduce a particular gensim feature, e.g. a mod
 .. only:: html
 
   .. image:: /auto_examples/tutorials/images/thumb/sphx_glr_run_wmd_thumb.png
-    :alt: Word Mover's Distance
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_tutorials_run_wmd.py`
+  :doc:`/auto_examples/tutorials/run_wmd`
 
 .. raw:: html
 
@@ -140,15 +145,17 @@ Learning-oriented lessons that introduce a particular gensim feature, e.g. a mod
 .. only:: html
 
   .. image:: /auto_examples/tutorials/images/thumb/sphx_glr_run_scm_thumb.png
-    :alt: Soft Cosine Measure
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_tutorials_run_scm.py`
+  :doc:`/auto_examples/tutorials/run_scm`
 
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Soft Cosine Measure</div>
     </div>
 
+
+.. thumbnail-parent-div-close
 
 .. raw:: html
 

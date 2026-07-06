@@ -9,22 +9,27 @@ If you're new to gensim, we recommend going through all core tutorials in order.
 Understanding this functionality is vital for using gensim effectively.
 
 
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
 
 .. raw:: html
 
     <div class="sphx-glr-thumbnails">
 
+.. thumbnail-parent-div-open
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial introduces Documents, Corpora, Vectors and Models: the basic concepts and terms n...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial introduces Documents, Corpora, Vectors and Models: the basic concepts and terms needed to understand and use gensim.">
 
 .. only:: html
 
   .. image:: /auto_examples/core/images/thumb/sphx_glr_run_core_concepts_thumb.png
-    :alt: Core Concepts
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_core_run_core_concepts.py`
+  :doc:`/auto_examples/core/run_core_concepts`
 
 .. raw:: html
 
@@ -39,9 +44,9 @@ Understanding this functionality is vital for using gensim effectively.
 .. only:: html
 
   .. image:: /auto_examples/core/images/thumb/sphx_glr_run_corpora_and_vector_spaces_thumb.png
-    :alt: Corpora and Vector Spaces
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_core_run_corpora_and_vector_spaces.py`
+  :doc:`/auto_examples/core/run_corpora_and_vector_spaces`
 
 .. raw:: html
 
@@ -56,9 +61,9 @@ Understanding this functionality is vital for using gensim effectively.
 .. only:: html
 
   .. image:: /auto_examples/core/images/thumb/sphx_glr_run_topics_and_transformations_thumb.png
-    :alt: Topics and Transformations
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_core_run_topics_and_transformations.py`
+  :doc:`/auto_examples/core/run_topics_and_transformations`
 
 .. raw:: html
 
@@ -73,15 +78,17 @@ Understanding this functionality is vital for using gensim effectively.
 .. only:: html
 
   .. image:: /auto_examples/core/images/thumb/sphx_glr_run_similarity_queries_thumb.png
-    :alt: Similarity Queries
+    :alt:
 
-  :ref:`sphx_glr_auto_examples_core_run_similarity_queries.py`
+  :doc:`/auto_examples/core/run_similarity_queries`
 
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Similarity Queries</div>
     </div>
 
+
+.. thumbnail-parent-div-close
 
 .. raw:: html
 
