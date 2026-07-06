@@ -266,7 +266,15 @@ Copyright (c) 2009-now Radim Rehurek
 
 distributed_env = ['Pyro4 >= 4.27']
 
-visdom_req = ['visdom >= 0.1.8, != 0.1.8.7']
+#
+# visdom is unmaintained (last release 0.2.4, 2022) and fails to build from
+# source on Python 3.14+ because its setup.py imports the removed pkg_resources.
+# The visdom callback test skips gracefully when it is absent.
+#
+if sys.version_info[:2] < (3, 14):
+    visdom_req = ['visdom >= 0.1.8, != 0.1.8.7']
+else:
+    visdom_req = []
 
 # packages included for build-testing everywhere
 core_testenv = [
