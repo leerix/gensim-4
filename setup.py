@@ -317,10 +317,12 @@ win_testenv = core_testenv[:]
 # under version control, we want to keep these differences to a minimum.
 #
 docs_testenv = core_testenv + distributed_env + visdom_req + [
-    'sphinx==5.1.1',
-    'sphinx-gallery==0.11.1',
-    'sphinxcontrib.programoutput==0.17',
-    'sphinxcontrib-napoleon==0.7',
+    'sphinx==9.1.0',
+    'sphinx-rtd-theme==3.1.0',
+    'sphinx-gallery==0.21.0',
+    'sphinxcontrib.programoutput==0.20',
+    # napoleon is provided by the built-in sphinx.ext.napoleon extension, so the
+    # standalone sphinxcontrib-napoleon package is no longer required.
     'matplotlib',  # expected by sphinx-gallery
     'memory_profiler',
     'annoy',

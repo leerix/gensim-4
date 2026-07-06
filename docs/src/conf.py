@@ -34,10 +34,14 @@ extensions = [
 ]
 autoclass_content = "both"
 
+# nmslib has no wheels for recent Python versions (e.g. 3.14), so mock it to let
+# autodoc document gensim.similarities.nmslib without importing the real package.
+autodoc_mock_imports = ['nmslib']
+
 napoleon_google_docstring = False  # Disable support for google-style docstring
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = []
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -46,11 +50,7 @@ source_suffix = '.rst'
 # source_encoding = 'utf-8'
 
 # The master toctree document.
-master_doc = 'indextoc'
-
-# Additional templates that should be rendered to pages, maps page names to
-# template names.
-html_additional_pages = {'index': './_templates/indexcontent.html'}
+master_doc = 'index'
 
 # General information about the project.
 project = u'gensim'
@@ -133,8 +133,9 @@ html_theme_options = {
 }
 
 
-# Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['.']
+# The sphinx_rtd_theme is provided by the installed sphinx-rtd-theme package and
+# registered via its entry point, so no custom theme path is needed.
+html_theme_path = []
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -234,14 +235,17 @@ latex_use_parts = False
 # If false, no module index is generated.
 # latex_use_modindex = True
 
-suppress_warnings = ['image.nonlocal_uri', 'ref.citation', 'ref.footnote']
+# 'config.cache' is emitted because sphinx_gallery_conf holds the sort_key
+# function (not picklable); the callable is intentional, so silence the warning.
+suppress_warnings = ['image.nonlocal_uri', 'ref.citation', 'ref.footnote', 'config.cache']
 
 
-def sort_key(source_dir):
-    """Sorts tutorials and guides in a predefined order.
+def sort_key(filename):
+    """Sort tutorials and guides in a predefined order.
 
-    If the predefined order doesn't include the filename we're looking for,
-    fallback to alphabetical order.
+    sphinx-gallery uses this directly as a ``sorted()`` key over the example
+    filenames within each subsection. Files not in the predefined order sort
+    after the ordered ones, alphabetically.
     """
     core_order = [
         'run_core_concepts.py',
@@ -271,15 +275,10 @@ def sort_key(source_dir):
     ]
 
     order = core_order + tutorials_order + howto_order
-    files = sorted(os.listdir(source_dir))
-
-    def key(arg):
-        try:
-            return order.index(arg)
-        except ValueError:
-            return files.index(arg)
-
-    return key
+    try:
+        return (0, order.index(filename))
+    except ValueError:
+        return (1, filename)
 
 
 import sphinx_gallery.sorting
