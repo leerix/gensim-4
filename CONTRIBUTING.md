@@ -25,7 +25,7 @@ Also, please check the [Gensim FAQ](https://github.com/RaRe-Technologies/gensim/
    - Build its documentation (works only for MacOS/Linux):
       - `pip install -e .[docs]`
       - `make -C docs/src html` (documentation stored in `docs/src/_build`)
-   - Run unit tests: `pytest -v gensim/test`
+   - Run unit tests: `SKIP_NETWORK_TESTS=1 pytest -v gensim/test`
 7. Add files, commit and push: `git add ... ; git commit -m "my commit message"; git push origin my-feature`
 8. [Create a PR](https://help.github.com/articles/creating-a-pull-request/) on Github. Write a **clear description** for your PR, including all the context and relevant information, such as:
    - The issue that you fixed, e.g. `Fixes #123`
