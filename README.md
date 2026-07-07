@@ -1,6 +1,8 @@
 gensim – Topic Modelling in Python
 ==================================
 
+This is a modification of gensim 4.4.0. Specifically to make it work with Python 3.14. See [README-3.14.md](README-3.14.md) for details.
+
 <!--
 The following image URLs are obfuscated = proxied and cached through
 Google because of Github's proxying issues. See:
@@ -26,21 +28,21 @@ community.
 Features
 --------
 
--   All algorithms are **memory-independent** w.r.t. the corpus size
+- All algorithms are **memory-independent** w.r.t. the corpus size
     (can process input larger than RAM, streamed, out-of-core),
--   **Intuitive interfaces**
-    -   easy to plug in your own input corpus/datastream (trivial
+- **Intuitive interfaces**
+  - easy to plug in your own input corpus/datastream (trivial
         streaming API)
-    -   easy to extend with other Vector Space algorithms (trivial
+  - easy to extend with other Vector Space algorithms (trivial
         transformation API)
--   Efficient multicore implementations of popular algorithms, such as
+- Efficient multicore implementations of popular algorithms, such as
     online **Latent Semantic Analysis (LSA/LSI/SVD)**, **Latent
     Dirichlet Allocation (LDA)**, **Random Projections (RP)**,
     **Hierarchical Dirichlet Process (HDP)** or **word2vec deep
     learning**.
--   **Distributed computing**: can run *Latent Semantic Analysis* and
+- **Distributed computing**: can run *Latent Semantic Analysis* and
     *Latent Dirichlet Allocation* on a cluster of computers.
--   Extensive [documentation and Jupyter Notebook tutorials].
+- Extensive [documentation and Jupyter Notebook tutorials].
 
 If this feature list left you scratching your head, you can first read
 more about the [Vector Space Model] and [unsupervised document analysis]
@@ -52,7 +54,7 @@ Installation
 This software depends on [NumPy], a Python package for
 scientific computing. Please bear in mind that building NumPy from source
 (e.g. by installing gensim on a platform which lacks NumPy .whl distribution)
-is a non-trivial task involving [linking NumPy to a BLAS library].  
+is a non-trivial task involving [linking NumPy to a BLAS library].
 It is recommended to provide a fast one (such as MKL, [ATLAS] or
 [OpenBLAS]) which can improve performance by as much as an order of
 magnitude. On OSX, NumPy picks up its vecLib BLAS automatically,
@@ -97,13 +99,12 @@ something bolted on as an afterthought.
 Documentation
 -------------
 
--   [QuickStart]
--   [Tutorials]
--   [Official API Documentation]
+- [QuickStart]
+- [Tutorials]
+- [Official API Documentation]
 
   [QuickStart]: https://radimrehurek.com/gensim/auto_examples/core/run_core_concepts.html
   [Tutorials]: https://radimrehurek.com/gensim/auto_examples/
-  [Official Documentation and Walkthrough]: https://radimrehurek.com/gensim/
   [Official API Documentation]: https://radimrehurek.com/gensim/auto_examples/index.html#documentation
 
 Support
@@ -114,7 +115,6 @@ For commercial support, please see [Gensim sponsorship](https://github.com/spons
 Ask open-ended questions on the public [Gensim Mailing List](https://groups.google.com/g/gensim).
 
 Raise bugs on [Github](https://github.com/RaRe-Technologies/gensim/blob/develop/CONTRIBUTING.md) but please **make sure you follow the [issue template](https://github.com/RaRe-Technologies/gensim/blob/develop/ISSUE_TEMPLATE.md)**. Issues that are not bugs or fail to provide the requested details will be closed without inspection.
-
 
 ---------
 
@@ -165,10 +165,6 @@ BibTeX entry:
   [citing gensim in academic papers and theses]: https://scholar.google.com/citations?view_op=view_citation&hl=en&user=9vG_kV0AAAAJ&citation_for_view=9vG_kV0AAAAJ:NaGl4SEjCO4C
 
   [design goals]: https://radimrehurek.com/gensim/intro.html#design-principles
-  [RaRe Technologies]: https://rare-technologies.com/wp-content/uploads/2016/02/rare_image_only.png%20=10x20
-  [rare\_tech]: //rare-technologies.com
-  [Talentpair]: https://avatars3.githubusercontent.com/u/8418395?v=3&s=100
-  [citing gensim in academic papers and theses]: https://scholar.google.cz/citations?view_op=view_citation&hl=en&user=9vG_kV0AAAAJ&citation_for_view=9vG_kV0AAAAJ:u-x6o8ySG0sC
 
   [documentation and Jupyter Notebook tutorials]: https://github.com/RaRe-Technologies/gensim/#documentation
   [Vector Space Model]: https://en.wikipedia.org/wiki/Vector_space_model
@@ -179,4 +175,3 @@ BibTeX entry:
   [OpenBLAS]: https://xianyi.github.io/OpenBLAS/
   [source tar.gz]: https://pypi.org/project/gensim/
   [documentation]: https://radimrehurek.com/gensim/#install
-

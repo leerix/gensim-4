@@ -63,14 +63,23 @@ def make_c_ext(use_cython=False):
 
 
 def make_cpp_ext(use_cython=False):
-    extra_args = []
+    extra_compile_args = []
+    extra_link_args = []
     system = platform.system()
 
     if system == 'Linux':
-        extra_args.append('-std=c++11')
+        extra_compile_args.append('-std=c++11')
+        # Some CPython builds report CXX=gcc (e.g. the python.org 3.14
+        # build), so setuptools links these C++ extensions with `gcc`,
+        # which does not pull in the C++ runtime. The resulting .so then
+        # fails to import with `undefined symbol: __gxx_personality_v0`.
+        # Link libstdc++ explicitly so the build does not depend on the
+        # interpreter's CXX/LDCXXSHARED config. See README-3.14.md.
+        extra_link_args.append('-lstdc++')
     elif system == 'Darwin':
-        extra_args.extend(['-stdlib=libc++', '-std=c++11'])
-#    extra_args.extend(['-g', '-O0'])  # uncomment if optimization limiting crash info
+        extra_compile_args.extend(['-stdlib=libc++', '-std=c++11'])
+        extra_link_args.extend(['-stdlib=libc++', '-std=c++11'])
+#    extra_compile_args.extend(['-g', '-O0'])  # uncomment if optimization limiting crash info
     for module, source in cpp_extensions.items():
         if use_cython:
             source = source.replace('.cpp', '.pyx')
@@ -78,8 +87,8 @@ def make_cpp_ext(use_cython=False):
             module,
             sources=[source],
             language='c++',
-            extra_compile_args=extra_args,
-            extra_link_args=extra_args,
+            extra_compile_args=extra_compile_args,
+            extra_link_args=extra_link_args,
         )
 
 

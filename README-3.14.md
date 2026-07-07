@@ -269,6 +269,15 @@ make -C docs/src html
 - **Docs appearance changed** - local docs now use the stock
   Read-the-Docs theme rather than the old branded landing page.
 
+## Docker
+
+In the `docker/` directory:
+
+- build.sh: builds a docker image
+- run.sh: runs the image with a bash shell
+
+Once it's running, run `./test-3.14.sh`. This runs all the commands listed in CONTRIBUTING.md.
+
 ## Changelog
 
 | Commit     | Summary                                                  |
@@ -278,7 +287,7 @@ make -C docs/src html
 | `0f1fd9e3` | docs: build on Python 3.14 with a modern Sphinx toolchain |
 | `d50df085` | build: exclude annoy on Python 3.14                      |
 | `7af96b36` | build: drop Python 3.9/3.10 support (remove NmslibIndexer) |
-| _pending_ | build: link C++ extensions against libstdc++ explicitly (fix `__gxx_personality_v0` import failure / docs build) |
-| _pending_ | fix: gate background `chunkize` worker on the `fork` start method (fix `cannot pickle 'generator'` on Linux py3.14 `forkserver`) |
+| *pending* | build: link C++ extensions against libstdc++ explicitly (fix `__gxx_personality_v0` import failure / docs build) |
+| *pending* | fix: gate background `chunkize` worker on the `fork` start method (fix `cannot pickle 'generator'` on Linux py3.14 `forkserver`) |
 
 Add new rows here as further 3.14 changes land.
