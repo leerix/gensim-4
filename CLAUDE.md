@@ -14,6 +14,12 @@ toolchain, or C/C++ extension build/link fixes), also update `README-3.14.md`:
   commit hash if the change isn't committed yet).
 - Correct any now-stale statements in the file rather than leaving them.
 
+**Also update `README-3.14.md` for backward-compatibility fixes to the model
+load path** - i.e. any change that makes this version (Gensim 4) load models
+saved by Gensim 3.x. These aren't 3.14-specific, but they are tracked in the
+same file (see its section 7 for an example). Follow the same steps above, and
+note in the entry that the change is not 3.14-specific.
+
 ## Building the extensions
 
 Some Cython extensions are C++ (`doc2vec_inner`, `word2vec_corpusfile`,

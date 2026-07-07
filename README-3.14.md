@@ -230,6 +230,55 @@ detected start method. Verified: the 21 tests pass on Linux 3.14
 (`forkserver`), and the fast path is unchanged where `fork` is the
 default.
 
+### 7. Load Doc2Vec models saved by Gensim 3.8.3
+
+Not a 3.14-specific fix - this is a backward-compatibility bug in the
+4.x model-load path that surfaced while extending the test suite. The
+old-doc2vec load path had no active coverage (its tests were all
+disabled as `obsolete_test_*`), so it had regressed and could not load
+any pre-4.0.0 `Doc2Vec` model:
+
+```
+AttributeError: 'Doc2Vec' object has no attribute 'dv'. Did you mean: 'dm'?
+```
+
+Three chained root causes:
+
+- **`docvecs` -> `dv` rename never happened** (`gensim/models/doc2vec.py`).
+  3.8.3 stored the doc-vectors under `docvecs`; 4.0.0 renamed the
+  attribute to `dv` and turned `docvecs` into a deprecated property. The
+  recursive loader in `utils._load_specials` walks the pickled
+  `__recursive_saveloads` list (which still contains `'docvecs'`) and
+  calls `getattr(self, 'docvecs')` - but the `docvecs` **property** (a
+  data descriptor) shadows the pickled `__dict__` entry and returns
+  `self.dv`, which does not exist yet. `Doc2Vec` had no `_load_specials`
+  override to handle the rename. Added one (mirroring
+  `Word2Vec._load_specials`) that renames the pickled attribute and
+  fixes the `__recursive_saveloads` list before the base class recurses.
+- **`_upconvert_old_d2vkv` used the raising `vocab` setter**
+  (`gensim/models/keyedvectors.py`). `self.vocab = self.doctags` triggers
+  the `vocab` setter, which raises since 4.0.0. Changed to write
+  `self.__dict__['vocab']` directly, which is what `_upconvert_old_vocab()`
+  pops back out.
+- **Missing `expandos` / unconditional `del expandos['offset']`**
+  (`gensim/models/keyedvectors.py`). `_upconvert_old_vocab()` needs
+  `self.expandos`, but it is only initialised *after* the
+  `_upconvert_old_d2vkv` call in the normal flow; and `'offset'` is only
+  set for string doctags, so integer-tag-only models (empty `doctags`)
+  hit a `KeyError`. Now `expandos` is ensured first and the offset
+  remapping is guarded on `'offset' in self.expandos`.
+
+Test (`gensim/test/test_doc2vec.py`): `test_load_3_8_3` loads a real
+3.8.3 model (`d2v_lee_3.8.3.mdl`), asserts the up-converted shapes, and
+round-trips it through save/load with inference + similarity search. Its
+assertions were leftovers copied from an old tiny-model test and were
+corrected to the actual lee-corpus values (`wv (3955, 100)`,
+`dv (300, 100)`, `len(dv) == 300`, `corpus_total_words == 58152`).
+
+Verified: `test_load_3_8_3` passes, and the full `test_doc2vec`,
+`test_word2vec`, and `test_keyedvectors` suites pass (the keyedvectors
+change is on the load path shared with word2vec).
+
 ## Building and testing on 3.14
 
 ```bash
@@ -289,5 +338,6 @@ Once it's running, run `./test-3.14.sh`. This runs all the commands listed in CO
 | `7af96b36` | build: drop Python 3.9/3.10 support (remove NmslibIndexer) |
 | `9dd29720` | build: link C++ extensions against libstdc++ explicitly (fix `__gxx_personality_v0` import failure / docs build) |
 | `ffb3cd77` | fix: gate background `chunkize` worker on the `fork` start method (fix `cannot pickle 'generator'` on Linux py3.14 `forkserver`) |
+| `_pending_` | fix: load Doc2Vec models saved by Gensim 3.8.3 (rename `docvecs` -> `dv`, repair `_upconvert_old_d2vkv`) |
 
 Add new rows here as further 3.14 changes land.

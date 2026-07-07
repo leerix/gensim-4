@@ -814,6 +814,19 @@ class Doc2Vec(Word2Vec):
                 "compatibility with current code.")
             raise ae
 
+    def _load_specials(self, *args, **kwargs):
+        """Handle special requirements of `.load()` protocol, usually up-converting older versions."""
+        # Pre-4.0.0 models stored the doc-vectors under `docvecs` (renamed to `dv` in 4.0.0). Rename the
+        # pickled instance attribute before the base class recursively loads sub-objects: otherwise the
+        # deprecated `docvecs` property shadows the pickled attribute and the recursive load fails with an
+        # AttributeError.
+        if 'docvecs' in self.__dict__ and 'dv' not in self.__dict__:
+            self.__dict__['dv'] = self.__dict__.pop('docvecs')
+        recursive_saveloads = self.__dict__.get('__recursive_saveloads')
+        if recursive_saveloads is not None and 'docvecs' in recursive_saveloads:
+            recursive_saveloads[recursive_saveloads.index('docvecs')] = 'dv'
+        super(Doc2Vec, self)._load_specials(*args, **kwargs)
+
     def estimate_memory(self, vocab_size=None, report=None):
         """Estimate required memory for a model using current settings.
 

@@ -1852,13 +1852,20 @@ class KeyedVectors(utils.SaveLoad):
 
     def _upconvert_old_d2vkv(self):
         """Convert a deserialized older Doc2VecKeyedVectors instance to latest generic KeyedVectors"""
-        self.vocab = self.doctags
+        # Insert into __dict__ directly: the `vocab` property setter raises since Gensim 4.0.0, and
+        # `_upconvert_old_vocab()` retrieves the value via `self.__dict__.pop('vocab', ...)`.
+        self.__dict__['vocab'] = self.doctags
+        if not hasattr(self, 'expandos'):
+            self.expandos = {}  # `_upconvert_old_vocab()` populates this; ensure it exists first
         self._upconvert_old_vocab()  # destroys 'vocab', fills 'key_to_index' & 'extras'
-        for k in self.key_to_index.keys():
-            old_offset = self.get_vecattr(k, 'offset')
-            true_index = old_offset + self.max_rawint + 1
-            self.key_to_index[k] = true_index
-        del self.expandos['offset']  # no longer needed
+        # The 'offset' vecattr is only present when there are string doctags; integer-tag-only models
+        # (empty `doctags`) never set it.
+        if 'offset' in self.expandos:
+            for k in self.key_to_index.keys():
+                old_offset = self.get_vecattr(k, 'offset')
+                true_index = old_offset + self.max_rawint + 1
+                self.key_to_index[k] = true_index
+            del self.expandos['offset']  # no longer needed
         if self.max_rawint > -1:
             self.index_to_key = list(range(0, self.max_rawint + 1)) + self.offset2doctag
         else:
