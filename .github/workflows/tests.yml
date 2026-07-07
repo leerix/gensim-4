@@ -30,10 +30,9 @@ jobs:
       - name: Setup up Python ${{ matrix.python }}
         uses: actions/setup-python@v5
         with:
-          #
-          # We use Py3.8 here for historical reasons.
-          #
-          python-version: "3.9"
+          # Sphinx 9.x (see docs extra) requires Python >= 3.11. annoy is still
+          # available here (unlike 3.14), so the annoy gallery example can run.
+          python-version: "3.13"
 
       - name: Update pip
         run: python -m pip install -U pip setuptools
@@ -63,17 +62,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {python: '3.9', os: ubuntu-24.04}
-          - {python: '3.10', os: ubuntu-24.04}
           - {python: '3.11', os: ubuntu-24.04}
           - {python: '3.12', os: ubuntu-24.04}
           - {python: '3.13', os: ubuntu-24.04}
+          - {python: '3.14', os: ubuntu-24.04}
 
-          - {python: '3.9', os: windows-2025}
-          - {python: '3.10', os: windows-2025}
           - {python: '3.11', os: windows-2025}
           - {python: '3.12', os: windows-2025}
           - {python: '3.13', os: windows-2025}
+          - {python: '3.14', os: windows-2025}
 
     #
     # Don't run this job unless the linters have succeeded.

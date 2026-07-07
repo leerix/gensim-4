@@ -34,10 +34,6 @@ extensions = [
 ]
 autoclass_content = "both"
 
-# nmslib has no wheels for recent Python versions (e.g. 3.14), so mock it to let
-# autodoc document gensim.similarities.nmslib without importing the real package.
-autodoc_mock_imports = ['nmslib']
-
 napoleon_google_docstring = False  # Disable support for google-style docstring
 
 # Add any paths that contain templates here, relative to this directory.

@@ -59,7 +59,6 @@ Modules:
     similarities/docsim
     similarities/termsim
     similarities/annoy
-    similarities/nmslib
     similarities/levenshtein
     similarities/fastss
     test/utils

@@ -293,15 +293,6 @@ core_testenv = [
     'testfixtures',
 ]
 
-if not sys.platform.lower().startswith("win") and sys.version_info[:2] < (3, 11):
-    core_testenv.append('POT')
-
-if not sys.platform.lower().startswith("win") and sys.version_info[:2] < (3, 10):
-    #
-    # nmslib wheels not available for Python 3.10 and 3.11 as of Dec 2022
-    #
-    core_testenv.append('nmslib')
-
 # Add additional requirements for testing on Linux that are skipped on Windows.
 linux_testenv = core_testenv[:] + visdom_req
 # Skip problematic/uninstallable  packages (& thus related conditional tests) in Windows builds.
@@ -386,8 +377,6 @@ setup(
         'Environment :: Console',
         'Intended Audience :: Science/Research',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: 3.13',
@@ -399,7 +388,7 @@ setup(
     ],
 
     test_suite="gensim.test",
-    python_requires='>=3.9',
+    python_requires='>=3.11',
     install_requires=install_requires,
     tests_require=linux_testenv,
     extras_require={

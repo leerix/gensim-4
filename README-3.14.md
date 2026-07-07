@@ -7,6 +7,18 @@ document cleanly on Python 3.14, and the reasoning behind each change.
 > add it under the relevant section and add a row to the changelog at the
 > bottom.
 
+## Supported Python versions
+
+Supported: **3.11, 3.12, 3.13, 3.14**.
+
+Python 3.9 and 3.10 support was dropped (both are at or near end of life).
+`python_requires` is now `>=3.11`, the 3.9/3.10 classifiers were removed,
+and the CI matrices (`tests.yml`, `build-wheels.yml`) build/test only
+3.11-3.14. Dead 3.9/3.10-only code was removed too: the `POT` (`< 3.11`)
+and `nmslib` (`< 3.10`) test-dependency install gates, the
+`upgrade_pip_py310.py` multibuild helper, and the NmslibIndexer feature
+(see below).
+
 ## Status
 
 - Library builds from source on Python 3.14 (all Cython extensions compile).
@@ -31,15 +43,14 @@ packaging, CI, test-dependency, and documentation-toolchain work.
 ### 1. Declare and build wheels for 3.14
 
 - `setup.py`: added the `Programming Language :: Python :: 3.14`
-  classifier. `python_requires='>=3.9'` already covers 3.14.
-- `.github/workflows/build-wheels.yml`:
+  classifier (`python_requires` is `>=3.11`).
+- `.github/workflows/build-wheels.yml` and `tests.yml`:
   - Bumped `pypa/cibuildwheel` to v4.x (3.14 is a default build target
     there; the previous v3.1.4 predates stable-3.14-by-default).
   - Removed `cp314*` from `CIBW_SKIP` and `CIBW_TEST_SKIP`.
-  - Added `3.14` rows to the test matrix (macOS, Ubuntu, Windows).
+  - Both CI test matrices build/test 3.11-3.14 (macOS, Ubuntu, Windows).
   - On 3.14 the wheel test installs the newest NumPy instead of
-    `oldest-supported-numpy` (which has no mapping for 3.14), reusing
-    the pattern already in place for Windows + Py3.10.
+    `oldest-supported-numpy` (which has no mapping for 3.14).
 - `pyproject.toml`: refreshed the stale build-requires comment. pip's
   build isolation resolves a 3.14-compatible NumPy automatically, so no
   version change was needed.
@@ -51,9 +62,10 @@ Cython, so the only work was the packaging/CI metadata.
 ### 2. Test dependencies unavailable on 3.14
 
 Several optional, native test/docs dependencies have no working build on
-Python 3.14. They are now gated out on 3.14, matching the pre-existing
-pattern for `nmslib` (`< 3.10`) and `POT` (`< 3.11`). The affected tests
-skip gracefully when the dependency is absent.
+Python 3.14. They are now gated out on 3.14 (the same conditional-append
+pattern that `POT` and `nmslib` used for older Pythons before those gates
+were removed). The affected tests skip gracefully when the dependency is
+absent.
 
 - **visdom** (`setup.py`): unmaintained (last release 0.2.4, 2022); its
   `setup.py` imports the removed `pkg_resources` module, so
@@ -95,9 +107,6 @@ Changes made (decision: adopt the standard, maintained theme):
     `master_doc = 'indextoc'`) with a standard `index.rst` root doc.
   - Ported `sort_key` to the new sphinx-gallery `within_subsection_order`
     key-function API (the old factory signature broke).
-  - `autodoc_mock_imports = ['nmslib']` so autodoc can document
-    `gensim.similarities.nmslib` without importing the (unavailable)
-    package.
   - Suppressed the benign `config.cache` warning triggered by the
     `sort_key` callable in `sphinx_gallery_conf`.
 - Removed the now-unused vendored theme and the custom index template.
@@ -106,6 +115,29 @@ Changes made (decision: adopt the standard, maintained theme):
 
 Verified: `sphinx-build -W` (warnings-as-errors, as the Makefile uses)
 completes cleanly on Python 3.14 with example execution disabled.
+
+### 4. Drop Python 3.9 / 3.10 and remove NmslibIndexer
+
+3.9 and 3.10 are at or near end of life, so support was dropped
+(supported set is now 3.11-3.14):
+
+- `setup.py`: removed the 3.9/3.10 classifiers, set `python_requires`
+  to `>=3.11`, and deleted the now-dead `POT` (`< 3.11`) and `nmslib`
+  (`< 3.10`) test-dependency install gates.
+- `pyproject.toml`: bumped the NumPy build-requires marker to
+  `python_version>='3.11'`.
+- `.github/workflows/tests.yml`, `build-wheels.yml`: dropped the
+  3.9/3.10 matrix rows and added `cp39-*`/`cp310-*` to `CIBW_SKIP`;
+  removed the Windows-Py3.10 NumPy work-around. The `tests.yml` docs
+  smoke-build job moved off 3.9 (which cannot install Sphinx 9.x) to
+  3.13.
+- Removed `continuous_integration/upgrade_pip_py310.py` (a 3.10-only
+  pip work-around) and its call in `config.sh`.
+- **Removed the NmslibIndexer feature** (`gensim/similarities/nmslib.py`,
+  its tests, the `similarities/nmslib` docs page and apiref entry). It
+  only ever worked on Python 3.9 + NumPy 1.x, so dropping 3.9 made it
+  unusable on every supported version. This is a breaking removal of the
+  public `gensim.similarities.NmslibIndexer` API.
 
 ## Building and testing on 3.14
 
@@ -130,8 +162,9 @@ make -C docs/src html
   skipped. The `run_annoy.py` documentation gallery example cannot
   execute on 3.14; full gallery execution would need that example
   excluded on 3.14 (not yet done).
-- **nmslib and POT** remain unavailable (pre-existing; no 3.14 wheels).
-  Their tests skip.
+- **NmslibIndexer was removed** (it only worked on Python 3.9, now
+  dropped). **POT** is not installed on any supported version, so the
+  WMD/optimal-transport tests skip.
 - **Network tests** (`gensim/test/test_api.py`) require downloading code
   from the external gensim-data repository, which uses an old
   `smart_open` API removed in smart_open 2.0+. These fail on any Python
