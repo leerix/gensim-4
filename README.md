@@ -6,6 +6,8 @@ See [README-3.14.md](README-3.14.md) for details.
 
 Our modified version of gensim-3.8.3 can be found here <https://github.com/leerix/gensim>
 
+---
+
 gensim – Topic Modelling in Python
 ==================================
 
