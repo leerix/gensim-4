@@ -1,7 +1,13 @@
+# Pera People Science Notes
+
+This is a modification of gensim 4.4.0. Specifically to make it work with Python 3.14 and to support loading models from version 3.8.3.
+
+See [README-3.14.md](README-3.14.md) for details.
+
+Our modified version of gensim-3.8.3 can be found here <https://github.com/leerix/gensim>
+
 gensim – Topic Modelling in Python
 ==================================
-
-This is a modification of gensim 4.4.0. Specifically to make it work with Python 3.14. See [README-3.14.md](README-3.14.md) for details.
 
 <!--
 The following image URLs are obfuscated = proxied and cached through
