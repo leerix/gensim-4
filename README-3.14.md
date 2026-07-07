@@ -30,14 +30,23 @@ and `nmslib` (`< 3.10`) test-dependency install gates, the
 - Documentation builds on Python 3.14 with a modern Sphinx toolchain.
 
 Verified locally on macOS (arm64) with Python 3.14.6, NumPy 2.5.1,
-SciPy 1.18.0, Cython 3.2.8.
+SciPy 1.18.0, Cython 3.2.8, and on Linux (x86_64) with Python 3.14.6.
+
+Note: macOS uses the `spawn` multiprocessing start method, so the
+`WikiCorpus` / `segment_wiki` tests always took the serial `chunkize`
+path there and passed. On Linux, 3.14 switched the default start method
+to `forkserver`, which exposed the `chunkize` pickling bug fixed in
+section 6.
 
 ## Key finding
 
-The gensim library code needed **no changes** for Python 3.14. The
-existing numpy-first `triu` fallback in `gensim/matutils.py` already
+The gensim library code needed **almost no changes** for Python 3.14.
+The existing numpy-first `triu` fallback in `gensim/matutils.py` already
 handles the SciPy >= 1.13 removal, and there is no removed-stdlib or
-deprecated-NumPy-scalar usage in the source. Everything below is
+deprecated-NumPy-scalar usage in the source. The one source fix is in
+`gensim/utils.py`: the background `chunkize` worker had to be gated on
+the multiprocessing start method, because 3.14 changed the Linux default
+from `fork` to `forkserver` (see section 6). Everything else below is
 packaging, CI, test-dependency, and documentation-toolchain work.
 
 ## Changes
@@ -59,7 +68,8 @@ packaging, CI, test-dependency, and documentation-toolchain work.
 
 Rationale: 3.14 was explicitly excluded from wheel builds and the CI
 test matrix. The C/C++ extensions compile fine on 3.14 with a current
-Cython, so the only work was the packaging/CI metadata.
+Cython, so the only work was the packaging/CI metadata. (Linking the
+C++ extensions needed one small fix on some interpreters — see section 5.)
 
 ### 2. Test dependencies unavailable on 3.14
 
@@ -141,6 +151,85 @@ completes cleanly on Python 3.14 with example execution disabled.
   unusable on every supported version. This is a breaking removal of the
   public `gensim.similarities.NmslibIndexer` API.
 
+### 5. Link the C++ extensions against libstdc++ explicitly
+
+Four of gensim's Cython extensions are C++ (`doc2vec_inner`,
+`word2vec_corpusfile`, `fasttext_corpusfile`, `doc2vec_corpusfile`).
+setuptools decides which compiler driver to link a C++ extension with
+from the interpreter's `CXX` / `LDCXXSHARED` sysconfig values. The
+python.org Linux 3.14 build reports `CXX=gcc` (not `g++`), so these
+extensions were **linked with `gcc`**, which does not pull in the C++
+runtime. The extensions compiled and installed without error, but at
+**import** time failed with:
+
+```
+ImportError: .../fasttext_corpusfile.cpython-314-*.so: undefined symbol: __gxx_personality_v0
+```
+
+(`__gxx_personality_v0` is a libstdc++ symbol.) Because the modules
+could not import, gensim fell back to its "compiled extensions
+unavailable" path, and every `autodoc` directive for an affected module
+raised a warning. The docs Makefile builds with `sphinx-build -W`
+(warnings-as-errors), so the 27 resulting warnings failed the build:
+
+```
+build finished with problems, 27 warnings (with warnings treated as errors).
+make: *** [Makefile:37: html] Error 1
+```
+
+This surfaced via the documentation build, but the root cause is a
+mis-linked extension, not a docs problem — the same modules also fail to
+import at runtime on such interpreters.
+
+Fix (`setup.py`, `make_cpp_ext`): on Linux, add `-lstdc++` to the C++
+extensions' `extra_link_args` so libstdc++ is linked in regardless of
+what `CXX`/`LDCXXSHARED` the interpreter reports. Compile and link args
+are now tracked separately (`-lstdc++` is a link-only flag). macOS is
+unaffected (it links libc++ via the existing `-stdlib=libc++`).
+
+Verified with a clean rebuild under the default environment
+(`CXX=gcc`): the link line is now `gcc ... -lstdc++`, `ldd` shows
+`libstdc++.so.6`, the extensions import, and `make -C docs/src html`
+completes with zero warnings.
+
+Note: the previous "all Cython extensions compile" / "compile fine"
+notes above were accurate about *compilation* but missed this *link*
+step; interpreters whose `CXX` is `g++` (e.g. the macOS toolchain this
+was first verified on) linked libstdc++ automatically and did not hit it.
+
+### 6. Gate the background `chunkize` worker on the `fork` start method
+
+Python 3.14 changed the default multiprocessing start method on Linux
+from `fork` to `forkserver`. `gensim.utils.chunkize` (when
+`maxsize > 0`) prepares chunks in a background `InputQueue`
+(`multiprocessing.Process`) subprocess. With `fork`, the child inherits
+the parent's `corpus` object directly; with `forkserver` (and `spawn`),
+the `Process` object — including its `corpus` attribute — is **pickled**
+to be sent to the child. When `corpus` is a generator (as it is for
+`WikiCorpus` / `segment_wiki`), that fails:
+
+```
+TypeError: cannot pickle 'generator' object
+  when serializing dict item 'corpus'
+  when serializing gensim.utils.InputQueue state
+```
+
+This broke 21 tests (`TestWikiCorpus`, `TestSegmentWiki`) on Linux 3.14.
+
+The pre-existing guard already aliased `chunkize` to `chunkize_serial`
+on the `spawn` platforms (Windows, macOS + py3.8+), but keyed off
+`os.name` / `sys.platform` / version rather than the actual start
+method, so it missed Linux + `forkserver`.
+
+Fix (`gensim/utils.py`): key the guard on
+`multiprocessing.get_start_method() != 'fork'` instead of hardcoding
+platforms. This covers `spawn` **and** `forkserver` on every OS and
+Python version, keeping the parallel fast path only where it actually
+works (`fork`, i.e. Linux < 3.14). The fallback warning now reports the
+detected start method. Verified: the 21 tests pass on Linux 3.14
+(`forkserver`), and the fast path is unchanged where `fork` is the
+default.
+
 ## Building and testing on 3.14
 
 ```bash
@@ -189,5 +278,7 @@ make -C docs/src html
 | `0f1fd9e3` | docs: build on Python 3.14 with a modern Sphinx toolchain |
 | `d50df085` | build: exclude annoy on Python 3.14                      |
 | `7af96b36` | build: drop Python 3.9/3.10 support (remove NmslibIndexer) |
+| _pending_ | build: link C++ extensions against libstdc++ explicitly (fix `__gxx_personality_v0` import failure / docs build) |
+| _pending_ | fix: gate background `chunkize` worker on the `fork` start method (fix `cannot pickle 'generator'` on Linux py3.14 `forkserver`) |
 
 Add new rows here as further 3.14 changes land.
