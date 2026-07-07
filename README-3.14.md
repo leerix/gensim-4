@@ -287,7 +287,7 @@ Once it's running, run `./test-3.14.sh`. This runs all the commands listed in CO
 | `0f1fd9e3` | docs: build on Python 3.14 with a modern Sphinx toolchain |
 | `d50df085` | build: exclude annoy on Python 3.14                      |
 | `7af96b36` | build: drop Python 3.9/3.10 support (remove NmslibIndexer) |
-| *pending* | build: link C++ extensions against libstdc++ explicitly (fix `__gxx_personality_v0` import failure / docs build) |
-| *pending* | fix: gate background `chunkize` worker on the `fork` start method (fix `cannot pickle 'generator'` on Linux py3.14 `forkserver`) |
+| `9dd29720` | build: link C++ extensions against libstdc++ explicitly (fix `__gxx_personality_v0` import failure / docs build) |
+| `ffb3cd77` | fix: gate background `chunkize` worker on the `fork` start method (fix `cannot pickle 'generator'` on Linux py3.14 `forkserver`) |
 
 Add new rows here as further 3.14 changes land.
