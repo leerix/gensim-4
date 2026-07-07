@@ -9,6 +9,8 @@ document cleanly on Python 3.14, and the reasoning behind each change.
 
 ## Supported Python versions
 
+<https://devguide.python.org/versions/#supported-versions>
+
 Supported: **3.11, 3.12, 3.13, 3.14**.
 
 Python 3.9 and 3.10 support was dropped (both are at or near end of life).
