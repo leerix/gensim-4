@@ -338,6 +338,6 @@ Once it's running, run `./test-3.14.sh`. This runs all the commands listed in CO
 | `7af96b36` | build: drop Python 3.9/3.10 support (remove NmslibIndexer) |
 | `9dd29720` | build: link C++ extensions against libstdc++ explicitly (fix `__gxx_personality_v0` import failure / docs build) |
 | `ffb3cd77` | fix: gate background `chunkize` worker on the `fork` start method (fix `cannot pickle 'generator'` on Linux py3.14 `forkserver`) |
-| `_pending_` | fix: load Doc2Vec models saved by Gensim 3.8.3 (rename `docvecs` -> `dv`, repair `_upconvert_old_d2vkv`) |
+| `0978ee04` | fix: load Doc2Vec models saved by Gensim 3.8.3 (rename `docvecs` -> `dv`, repair `_upconvert_old_d2vkv`) |
 
 Add new rows here as further 3.14 changes land.
