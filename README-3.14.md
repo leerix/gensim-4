@@ -186,5 +186,6 @@ make -C docs/src html
 | `0d5b2d0b` | build: skip visdom test dep on Python 3.14               |
 | `0f1fd9e3` | docs: build on Python 3.14 with a modern Sphinx toolchain |
 | `d50df085` | build: exclude annoy on Python 3.14                      |
+| `7af96b36` | build: drop Python 3.9/3.10 support (remove NmslibIndexer) |
 
 Add new rows here as further 3.14 changes land.
