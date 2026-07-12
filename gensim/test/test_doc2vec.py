@@ -235,6 +235,35 @@ class TestDoc2VecModel(unittest.TestCase):
         sims_to_infer = loaded_model.dv.most_similar([doc0_inferred], topn=len(loaded_model.dv))
         self.assertTrue(sims_to_infer)
 
+    def test_load_3_8_3_string_tags(self):
+        # A 3.8.3 model with *string* document tags exercises the doctags-dict upconvert path that
+        # integer-tag models (test_load_3_8_3, and the older obsolete_* fixtures) never touch. In 3.8.3
+        # `Doctag` was a namedtuple, so unpickling into the current __slots__ class drops every per-doctag
+        # attribute; the tag->index mapping must be rebuilt from `offset2doctag` and `max_rawint` instead.
+        old_version = "3.8.3"
+        logging.info("TESTING LOAD of %s string-tag Doc2Vec MODEL", old_version)
+        saved_model = datapath("old_d2v_models/d2v_string_tags_3.8.3.mdl")
+        model = doc2vec.Doc2Vec.load(saved_model)
+        expected_tags = ["doc_%d" % i for i in range(9)]
+        self.assertEqual(model.dv.index_to_key, expected_tags)
+        self.assertEqual(model.dv.key_to_index, {tag: i for i, tag in enumerate(expected_tags)})
+        self.assertEqual(model.dv.vectors.shape, (9, 5))
+        self.assertEqual(len(model.dv), 9)
+        # string tags must be usable as lookup keys
+        self.assertEqual(model.dv["doc_3"].shape, (5,))
+        # check if inferring vectors for new documents and similarity search works.
+        doc0_inferred = model.infer_vector(raw_sentences[0])
+        sims_to_infer = model.dv.most_similar([doc0_inferred], topn=len(model.dv))
+        self.assertTrue(sims_to_infer)
+        # check if inferring vectors and similarity search works after saving and loading back the model
+        tmpf = get_tmpfile("gensim_doc2vec.tst")
+        model.save(tmpf)
+        loaded_model = doc2vec.Doc2Vec.load(tmpf)
+        self.assertEqual(loaded_model.dv.index_to_key, expected_tags)
+        doc0_inferred = loaded_model.infer_vector(raw_sentences[0])
+        sims_to_infer = loaded_model.dv.most_similar([doc0_inferred], topn=len(loaded_model.dv))
+        self.assertTrue(sims_to_infer)
+
     def test_doc2vec_train_parameters(self):
 
         model = doc2vec.Doc2Vec(vector_size=50)

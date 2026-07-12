@@ -1852,24 +1852,20 @@ class KeyedVectors(utils.SaveLoad):
 
     def _upconvert_old_d2vkv(self):
         """Convert a deserialized older Doc2VecKeyedVectors instance to latest generic KeyedVectors"""
-        # Insert into __dict__ directly: the `vocab` property setter raises since Gensim 4.0.0, and
-        # `_upconvert_old_vocab()` retrieves the value via `self.__dict__.pop('vocab', ...)`.
-        self.__dict__['vocab'] = self.doctags
         if not hasattr(self, 'expandos'):
-            self.expandos = {}  # `_upconvert_old_vocab()` populates this; ensure it exists first
-        self._upconvert_old_vocab()  # destroys 'vocab', fills 'key_to_index' & 'extras'
-        # The 'offset' vecattr is only present when there are string doctags; integer-tag-only models
-        # (empty `doctags`) never set it.
-        if 'offset' in self.expandos:
-            for k in self.key_to_index.keys():
-                old_offset = self.get_vecattr(k, 'offset')
-                true_index = old_offset + self.max_rawint + 1
-                self.key_to_index[k] = true_index
-            del self.expandos['offset']  # no longer needed
+            self.expandos = {}
+        # Reconstruct the tag->index mapping from `offset2doctag` and `max_rawint` rather than from the
+        # `doctags` values. In Gensim <4.0.0 `Doctag` was a `namedtuple` (its offset/word_count/doc_count
+        # lived in the tuple itself), whereas the current `Doctag` is a plain `__slots__` class that is not
+        # a tuple subclass. Unpickling a pre-4.0.0 model therefore drops every per-doctag attribute, so the
+        # generic `_upconvert_old_vocab()` path (which reads `old_v.index` / the per-tag `offset` vecattr)
+        # crashes on string doctags. The array layout is fully recoverable without those objects: integer
+        # "raw int" tags occupy rows `0..max_rawint`, followed by the string tags in `offset2doctag` order.
         if self.max_rawint > -1:
             self.index_to_key = list(range(0, self.max_rawint + 1)) + self.offset2doctag
         else:
             self.index_to_key = self.offset2doctag
+        self.key_to_index = {key: index for index, key in enumerate(self.index_to_key)}
         self.vectors = self.vectors_docs
         del self.doctags
         del self.vectors_docs

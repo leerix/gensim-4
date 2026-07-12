@@ -279,6 +279,59 @@ Verified: `test_load_3_8_3` passes, and the full `test_doc2vec`,
 `test_word2vec`, and `test_keyedvectors` suites pass (the keyedvectors
 change is on the load path shared with word2vec).
 
+Note: the `expandos` / `offset`-vecattr remapping described in the third
+bullet was later superseded by section 8 - it never actually worked for
+string doctags, and `_upconvert_old_d2vkv` no longer calls
+`_upconvert_old_vocab` at all.
+
+### 8. Load Doc2Vec models with string document tags
+
+Also not a 3.14-specific fix - a second backward-compatibility bug on the
+same load path, reported when loading a real 3.8.3 model with string
+document tags:
+
+```
+AttributeError: 'gensim.models.doc2vec.Doctag' object has no attribute 'index'
+```
+
+The `d2v_lee_3.8.3.mdl` fixture added in section 7 uses integer tags, so
+its `doctags` dict is empty and the string-doctag branch of
+`_upconvert_old_d2vkv` was never exercised. A model with string tags
+takes that branch and crashes.
+
+Root cause: in Gensim <4.0.0 `Doctag` was a `namedtuple` whose fields
+(`offset`, `word_count`, `doc_count`) live in the tuple itself. Gensim
+4.0.0 redefined `Doctag` as a plain `__slots__` class that is **not** a
+tuple subclass. Unpickling a pre-4.0.0 model reconstructs each `Doctag`
+via `Doctag.__new__(Doctag, offset, word_count, doc_count)`, but the new
+class ignores those positional args, so **every per-doctag attribute is
+silently dropped** - the loaded `Doctag` objects are empty. The generic
+`_upconvert_old_vocab()` path then reads `old_v.index` (and, in the
+follow-up, a per-tag `offset` vecattr) off those empty objects and
+raises.
+
+Fix (`gensim/models/keyedvectors.py`): rewrite `_upconvert_old_d2vkv` to
+rebuild `index_to_key` / `key_to_index` directly from the surviving
+`offset2doctag` list and `max_rawint`, without touching the dead `Doctag`
+objects or calling `_upconvert_old_vocab`. This is the exact array layout
+Gensim 3.x used - integer "raw int" tags occupy rows `0..max_rawint`,
+followed by the string tags in `offset2doctag` order - so the
+reconstructed vectors are bit-identical to the originals. The per-tag
+`word_count` / `doc_count` extras are unrecoverable (they were dropped on
+unpickle) and are not needed for lookup, inference, or similarity search.
+This also simplifies the integer-tag path, which produced the same result
+by a longer route.
+
+Test (`gensim/test/test_doc2vec.py`): `test_load_3_8_3_string_tags` loads
+a real 3.8.3 string-tagged model (`d2v_string_tags_3.8.3.mdl`, built from
+`common_texts`), asserts the reconstructed `index_to_key` /
+`key_to_index`, verifies string-tag lookup, and round-trips through
+save/load with inference + similarity search.
+
+Verified: `test_load_3_8_3_string_tags`, `test_load_3_8_3`, the full
+`test_doc2vec` and `test_keyedvectors` suites pass, and the reconstructed
+doc-vectors are `array_equal` to the ones read by Gensim 3.8.3 itself.
+
 ## Building and testing on 3.14
 
 ```bash
@@ -339,5 +392,6 @@ Once it's running, run `./test-3.14.sh`. This runs all the commands listed in CO
 | `9dd29720` | build: link C++ extensions against libstdc++ explicitly (fix `__gxx_personality_v0` import failure / docs build) |
 | `ffb3cd77` | fix: gate background `chunkize` worker on the `fork` start method (fix `cannot pickle 'generator'` on Linux py3.14 `forkserver`) |
 | `0978ee04` | fix: load Doc2Vec models saved by Gensim 3.8.3 (rename `docvecs` -> `dv`, repair `_upconvert_old_d2vkv`) |
+| `_pending_` | fix: load Doc2Vec models with string document tags saved by Gensim 3.8.3 (rebuild `_upconvert_old_d2vkv` from `offset2doctag`/`max_rawint`) |
 
 Add new rows here as further 3.14 changes land.
