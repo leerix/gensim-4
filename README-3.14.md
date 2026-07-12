@@ -392,6 +392,6 @@ Once it's running, run `./test-3.14.sh`. This runs all the commands listed in CO
 | `9dd29720` | build: link C++ extensions against libstdc++ explicitly (fix `__gxx_personality_v0` import failure / docs build) |
 | `ffb3cd77` | fix: gate background `chunkize` worker on the `fork` start method (fix `cannot pickle 'generator'` on Linux py3.14 `forkserver`) |
 | `0978ee04` | fix: load Doc2Vec models saved by Gensim 3.8.3 (rename `docvecs` -> `dv`, repair `_upconvert_old_d2vkv`) |
-| `_pending_` | fix: load Doc2Vec models with string document tags saved by Gensim 3.8.3 (rebuild `_upconvert_old_d2vkv` from `offset2doctag`/`max_rawint`) |
+| `8ec1479c` | fix: load Doc2Vec models with string document tags saved by Gensim 3.8.3 (rebuild `_upconvert_old_d2vkv` from `offset2doctag`/`max_rawint`) |
 
 Add new rows here as further 3.14 changes land.
