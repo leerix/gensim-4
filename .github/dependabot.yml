@@ -6,3 +6,15 @@ updates:
       interval: 'weekly'
     cooldown:
       default-days: 14
+
+  # Python dependencies: setup.py, pyproject.toml, requirements_docs.txt.
+  - package-ecosystem: 'pip'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    cooldown:
+      default-days: 14
+    # Only rewrite a requirement when the new version falls outside it, so
+    # the open ranges in setup.py's install_requires (e.g. 'numpy >= 1.18.5')
+    # are left alone and only the exact pins get update PRs.
+    versioning-strategy: 'increase-if-necessary'
