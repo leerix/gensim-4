@@ -128,6 +128,23 @@ Changes made (decision: adopt the standard, maintained theme):
 Verified: `sphinx-build -W` (warnings-as-errors, as the Makefile uses)
 completes cleanly on Python 3.14 with example execution disabled.
 
+Later pin refreshes (not 3.14 blockers, just keeping the docs
+environment current):
+
+- `requirements_docs.txt`: `nltk` 3.9.4 -> 3.10.0. nltk is a docs-only
+  dependency (the gallery examples use it for stopwords, tokenizing, and
+  lemmatizing); nothing under `gensim/` imports it. 3.9.4 already
+  supported 3.14, so this is a routine bump. 3.10.0 requires Python
+  >= 3.10 (gensim requires >= 3.11) and adds `defusedxml` to nltk's own
+  dependencies. The `nltk` entry in `setup.py`'s `docs_testenv` stays
+  unpinned, matching the other non-Sphinx docs deps there.
+
+  Verified: every nltk API the gallery uses still imports and behaves the
+  same under 3.10.0 - `nltk.download`, `nltk.corpus.stopwords`,
+  `nltk.tokenize.RegexpTokenizer` (and the top-level `nltk.RegexpTokenizer`
+  alias used by `run_compare_lda.py`), `nltk.stem.wordnet.WordNetLemmatizer`,
+  `nltk.stem.porter.PorterStemmer`.
+
 ### 4. Drop Python 3.9 / 3.10 and remove NmslibIndexer
 
 3.9 and 3.10 are at or near end of life, so support was dropped
@@ -393,5 +410,6 @@ Once it's running, run `./test-3.14.sh`. This runs all the commands listed in CO
 | `ffb3cd77` | fix: gate background `chunkize` worker on the `fork` start method (fix `cannot pickle 'generator'` on Linux py3.14 `forkserver`) |
 | `0978ee04` | fix: load Doc2Vec models saved by Gensim 3.8.3 (rename `docvecs` -> `dv`, repair `_upconvert_old_d2vkv`) |
 | `8ec1479c` | fix: load Doc2Vec models with string document tags saved by Gensim 3.8.3 (rebuild `_upconvert_old_d2vkv` from `offset2doctag`/`max_rawint`) |
+| `_pending_` | build: bump the docs-only `nltk` pin to 3.10.0                |
 
 Add new rows here as further 3.14 changes land.

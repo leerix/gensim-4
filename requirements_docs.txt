@@ -2,7 +2,7 @@ Pyro4==4.82
 Sphinx==9.1.0
 sphinx-rtd-theme==3.1.0
 memory-profiler==0.61.0
-nltk==3.9.4
+nltk==3.10.0
 pandas==3.0.3
 scikit-learn==1.9.0
 sphinx-gallery==0.21.0
