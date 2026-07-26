@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # Copyright (C) 2014 Radim Rehurek <radimrehurek@seznam.cz>
 # Licensed under the GNU LGPL v2.1 - https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html
@@ -17,24 +16,28 @@ import shutil
 import sys
 from collections import OrderedDict
 
-from setuptools import Extension, find_packages, setup, distutils
+from setuptools import Extension, distutils, find_packages, setup
 from setuptools.command.build_ext import build_ext
 
-c_extensions = OrderedDict([
-    ('gensim.models.word2vec_inner', 'gensim/models/word2vec_inner.c'),
-    ('gensim.corpora._mmreader', 'gensim/corpora/_mmreader.c'),
-    ('gensim.models.fasttext_inner', 'gensim/models/fasttext_inner.c'),
-    ('gensim._matutils', 'gensim/_matutils.c'),
-    ('gensim.models.nmf_pgd', 'gensim/models/nmf_pgd.c'),
-    ('gensim.similarities.fastss', 'gensim/similarities/fastss.c'),
-])
+c_extensions = OrderedDict(
+    [
+        ("gensim.models.word2vec_inner", "gensim/models/word2vec_inner.c"),
+        ("gensim.corpora._mmreader", "gensim/corpora/_mmreader.c"),
+        ("gensim.models.fasttext_inner", "gensim/models/fasttext_inner.c"),
+        ("gensim._matutils", "gensim/_matutils.c"),
+        ("gensim.models.nmf_pgd", "gensim/models/nmf_pgd.c"),
+        ("gensim.similarities.fastss", "gensim/similarities/fastss.c"),
+    ]
+)
 
-cpp_extensions = OrderedDict([
-    ('gensim.models.doc2vec_inner', 'gensim/models/doc2vec_inner.cpp'),
-    ('gensim.models.word2vec_corpusfile', 'gensim/models/word2vec_corpusfile.cpp'),
-    ('gensim.models.fasttext_corpusfile', 'gensim/models/fasttext_corpusfile.cpp'),
-    ('gensim.models.doc2vec_corpusfile', 'gensim/models/doc2vec_corpusfile.cpp'),
-])
+cpp_extensions = OrderedDict(
+    [
+        ("gensim.models.doc2vec_inner", "gensim/models/doc2vec_inner.cpp"),
+        ("gensim.models.word2vec_corpusfile", "gensim/models/word2vec_corpusfile.cpp"),
+        ("gensim.models.fasttext_corpusfile", "gensim/models/fasttext_corpusfile.cpp"),
+        ("gensim.models.doc2vec_corpusfile", "gensim/models/doc2vec_corpusfile.cpp"),
+    ]
+)
 
 
 def need_cython():
@@ -45,19 +48,19 @@ def need_cython():
 
     """
     expected = list(c_extensions.values()) + list(cpp_extensions.values())
-    return any([not os.path.isfile(f) for f in expected])
+    return any(not os.path.isfile(f) for f in expected)
 
 
 def make_c_ext(use_cython=False):
     for module, source in c_extensions.items():
         if use_cython:
-            source = source.replace('.c', '.pyx')
+            source = source.replace(".c", ".pyx")
         extra_args = []
-#        extra_args.extend(['-g', '-O0'])  # uncomment if optimization limiting crash info
+        #        extra_args.extend(['-g', '-O0'])  # uncomment if optimization limiting crash info
         yield Extension(
             module,
             sources=[source],
-            language='c',
+            language="c",
             extra_compile_args=extra_args,
         )
 
@@ -67,26 +70,26 @@ def make_cpp_ext(use_cython=False):
     extra_link_args = []
     system = platform.system()
 
-    if system == 'Linux':
-        extra_compile_args.append('-std=c++11')
+    if system == "Linux":
+        extra_compile_args.append("-std=c++11")
         # Some CPython builds report CXX=gcc (e.g. the python.org 3.14
         # build), so setuptools links these C++ extensions with `gcc`,
         # which does not pull in the C++ runtime. The resulting .so then
         # fails to import with `undefined symbol: __gxx_personality_v0`.
         # Link libstdc++ explicitly so the build does not depend on the
         # interpreter's CXX/LDCXXSHARED config. See README-3.14.md.
-        extra_link_args.append('-lstdc++')
-    elif system == 'Darwin':
-        extra_compile_args.extend(['-stdlib=libc++', '-std=c++11'])
-        extra_link_args.extend(['-stdlib=libc++', '-std=c++11'])
-#    extra_compile_args.extend(['-g', '-O0'])  # uncomment if optimization limiting crash info
+        extra_link_args.append("-lstdc++")
+    elif system == "Darwin":
+        extra_compile_args.extend(["-stdlib=libc++", "-std=c++11"])
+        extra_link_args.extend(["-stdlib=libc++", "-std=c++11"])
+    #    extra_compile_args.extend(['-g', '-O0'])  # uncomment if optimization limiting crash info
     for module, source in cpp_extensions.items():
         if use_cython:
-            source = source.replace('.cpp', '.pyx')
+            source = source.replace(".cpp", ".pyx")
         yield Extension(
             module,
             sources=[source],
-            language='c++',
+            language="c++",
             extra_compile_args=extra_compile_args,
             extra_link_args=extra_link_args,
         )
@@ -107,10 +110,12 @@ class CustomBuildExt(build_ext):
     We need this in order to use numpy and Cython in this script without
     importing them at module level, because they may not be available at that time.
     """
+
     def finalize_options(self):
         build_ext.finalize_options(self)
 
         import builtins
+
         import numpy
 
         #
@@ -123,18 +128,19 @@ class CustomBuildExt(build_ext):
         try:
             builtins.__NUMPY_SETUP__ = False
         except Exception as ex:
-            print(f'could not use __NUMPY_SETUP__ hack (numpy version: {numpy.__version__}): {ex}')
+            print(f"could not use __NUMPY_SETUP__ hack (numpy version: {numpy.__version__}): {ex}")
 
         self.include_dirs.append(numpy.get_include())
 
         if need_cython():
             import Cython.Build
+
             Cython.Build.cythonize(list(make_c_ext(use_cython=True)), language_level=3)
             Cython.Build.cythonize(list(make_cpp_ext(use_cython=True)), language_level=3)
 
 
 class CleanExt(distutils.cmd.Command):
-    description = 'Remove C sources, C++ sources and binaries for gensim extensions'
+    description = "Remove C sources, C++ sources and binaries for gensim extensions"
     user_options = []
 
     def initialize_options(self):
@@ -144,30 +150,27 @@ class CleanExt(distutils.cmd.Command):
         pass
 
     def run(self):
-        for root, dirs, files in os.walk('gensim'):
-            files = [
-                os.path.join(root, f)
-                for f in files
-                if os.path.splitext(f)[1] in ('.c', '.cpp', '.so')
-            ]
+        for root, dirs, files in os.walk("gensim"):
+            files = [os.path.join(root, f) for f in files if os.path.splitext(f)[1] in (".c", ".cpp", ".so")]
             for f in files:
-                self.announce('removing %s' % f, level=distutils.log.INFO)
+                self.announce("removing %s" % f, level=distutils.log.INFO)
                 os.unlink(f)
 
-        if os.path.isdir('build'):
-            self.announce('recursively removing build', level=distutils.log.INFO)
-            shutil.rmtree('build')
+        if os.path.isdir("build"):
+            self.announce("recursively removing build", level=distutils.log.INFO)
+            shutil.rmtree("build")
 
 
-cmdclass = {'build_ext': CustomBuildExt, 'clean_ext': CleanExt}
+cmdclass = {"build_ext": CustomBuildExt, "clean_ext": CleanExt}
 
-WHEELHOUSE_UPLOADER_COMMANDS = {'fetch_artifacts', 'upload_all'}
+WHEELHOUSE_UPLOADER_COMMANDS = {"fetch_artifacts", "upload_all"}
 if WHEELHOUSE_UPLOADER_COMMANDS.intersection(sys.argv):
     import wheelhouse_uploader.cmd
+
     cmdclass.update(vars(wheelhouse_uploader.cmd))
 
 
-LONG_DESCRIPTION = u"""
+LONG_DESCRIPTION = """
 ==============================================
 gensim -- Topic Modelling in Python
 ==============================================
@@ -273,7 +276,7 @@ Copyright (c) 2009-now Radim Rehurek
 
 """
 
-distributed_env = ['Pyro4 >= 4.27']
+distributed_env = ["Pyro4 >= 4.27"]
 
 #
 # visdom is unmaintained (last release 0.2.4, 2022) and fails to build from
@@ -281,7 +284,7 @@ distributed_env = ['Pyro4 >= 4.27']
 # The visdom callback test skips gracefully when it is absent.
 #
 if sys.version_info[:2] < (3, 14):
-    visdom_req = ['visdom >= 0.1.8, != 0.1.8.7']
+    visdom_req = ["visdom >= 0.1.8, != 0.1.8.7"]
 else:
     visdom_req = []
 
@@ -291,15 +294,15 @@ else:
 # excluded there. The AnnoyIndexer tests skip gracefully when it is absent.
 #
 if sys.version_info[:2] < (3, 14):
-    annoy_req = ['annoy']
+    annoy_req = ["annoy"]
 else:
     annoy_req = []
 
 # packages included for build-testing everywhere
 core_testenv = [
-    'pytest',
-    'pytest-cov',
-    'testfixtures',
+    "pytest",
+    "pytest-cov",
+    "testfixtures",
 ]
 
 # Add additional requirements for testing on Linux that are skipped on Windows.
@@ -326,86 +329,82 @@ win_testenv = core_testenv[:]
 # can generate slightly different output, and because we keep some of the output
 # under version control, we want to keep these differences to a minimum.
 #
-docs_testenv = core_testenv + distributed_env + visdom_req + [
-    'sphinx==9.1.0',
-    'sphinx-rtd-theme==3.1.0',
-    'sphinx-gallery==0.21.0',
-    'sphinxcontrib.programoutput==0.20',
-    # napoleon is provided by the built-in sphinx.ext.napoleon extension, so the
-    # standalone sphinxcontrib-napoleon package is no longer required.
-    'matplotlib',  # expected by sphinx-gallery
-    'memory_profiler',
-    'Pyro4',
-    'scikit-learn',
-    'nltk',
-    'testfixtures',
-    'statsmodels',
-    'pandas',
-] + annoy_req
+docs_testenv = (
+    core_testenv
+    + distributed_env
+    + visdom_req
+    + [
+        "sphinx==9.1.0",
+        "sphinx-rtd-theme==3.1.0",
+        "sphinx-gallery==0.21.0",
+        "sphinxcontrib.programoutput==0.20",
+        # napoleon is provided by the built-in sphinx.ext.napoleon extension, so the
+        # standalone sphinxcontrib-napoleon package is no longer required.
+        "matplotlib",  # expected by sphinx-gallery
+        "memory_profiler",
+        "Pyro4",
+        "scikit-learn",
+        "nltk",
+        "testfixtures",
+        "statsmodels",
+        "pandas",
+    ]
+    + annoy_req
+)
 
-NUMPY_STR = 'numpy >= 1.18.5'
+NUMPY_STR = "numpy >= 1.18.5"
 
 install_requires = [
     NUMPY_STR,
-    'scipy >= 1.7.0',
-    'smart_open >= 1.8.1',
+    "scipy >= 1.7.0",
+    "smart_open >= 1.8.1",
 ]
 
 setup(
-    name='gensim',
-    version='4.4.0',
-    description='Python framework for fast Vector Space Modelling',
+    name="gensim",
+    version="4.4.0",
+    description="Python framework for fast Vector Space Modelling",
     long_description=LONG_DESCRIPTION,
-
     ext_modules=ext_modules,
     cmdclass=cmdclass,
     packages=find_packages(),
-
-    author=u'Radim Rehurek',
-    author_email='me@radimrehurek.com',
-
-    url='https://radimrehurek.com/gensim/',
+    author="Radim Rehurek",
+    author_email="me@radimrehurek.com",
+    url="https://radimrehurek.com/gensim/",
     project_urls={
-        'Source': 'https://github.com/RaRe-Technologies/gensim',
+        "Source": "https://github.com/RaRe-Technologies/gensim",
     },
-    download_url='https://pypi.org/project/gensim/',
-
-    license='LGPL-2.1-only',
-
-    keywords='Singular Value Decomposition, SVD, Latent Semantic Indexing, '
-        'LSA, LSI, Latent Dirichlet Allocation, LDA, '
-        'Hierarchical Dirichlet Process, HDP, Random Projections, '
-        'TFIDF, word2vec',
-
-    platforms='any',
-
+    download_url="https://pypi.org/project/gensim/",
+    license="LGPL-2.1-only",
+    keywords="Singular Value Decomposition, SVD, Latent Semantic Indexing, "
+    "LSA, LSI, Latent Dirichlet Allocation, LDA, "
+    "Hierarchical Dirichlet Process, HDP, Random Projections, "
+    "TFIDF, word2vec",
+    platforms="any",
     zip_safe=False,
-
     classifiers=[  # from https://pypi.org/classifiers/
-        'Development Status :: 5 - Production/Stable',
-        'Environment :: Console',
-        'Intended Audience :: Science/Research',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.11',
-        'Programming Language :: Python :: 3.12',
-        'Programming Language :: Python :: 3.13',
-        'Programming Language :: Python :: 3.14',
-        'Programming Language :: Python :: 3 :: Only',
-        'Topic :: Scientific/Engineering :: Artificial Intelligence',
-        'Topic :: Scientific/Engineering :: Information Analysis',
-        'Topic :: Text Processing :: Linguistic',
+        "Development Status :: 5 - Production/Stable",
+        "Environment :: Console",
+        "Intended Audience :: Science/Research",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
+        "Programming Language :: Python :: 3 :: Only",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Scientific/Engineering :: Information Analysis",
+        "Topic :: Text Processing :: Linguistic",
     ],
-
     test_suite="gensim.test",
-    python_requires='>=3.11',
+    python_requires=">=3.11",
     install_requires=install_requires,
     tests_require=linux_testenv,
     extras_require={
-        'distributed': distributed_env,
-        'test-win': win_testenv,
-        'test': linux_testenv,
-        'docs': docs_testenv,
+        "distributed": distributed_env,
+        "test-win": win_testenv,
+        "test": linux_testenv,
+        "docs": docs_testenv,
     },
-
     include_package_data=True,
 )
