@@ -349,6 +349,62 @@ Verified: `test_load_3_8_3_string_tags`, `test_load_3_8_3`, the full
 `test_doc2vec` and `test_keyedvectors` suites pass, and the reconstructed
 doc-vectors are `array_equal` to the ones read by Gensim 3.8.3 itself.
 
+### 9. Remove the bogus `except -1` on the `sdot` / `dsdot` typedefs
+
+Not a 3.14-specific fix either - a leftover from the Cython 3 `noexcept`
+migration (commit `6e1753a4`, which converted the rest of
+`word2vec_inner.pxd` but missed these two lines).
+
+The BLAS function-pointer typedefs for `sdot` and `dsdot` in
+`gensim/models/word2vec_inner.pxd` were declared `except -1 nogil`.
+Without the `?`, that tells Cython a return value of exactly -1 *always*
+means an exception was raised, so no `PyErr_Occurred()` guard is emitted
+and the value alone is taken as the error signal. For a dot product, -1.0
+is an ordinary result.
+
+The generated C for `our_dot_double` (`word2vec_inner.pyx:48`) was:
+
+```c
+__pyx_t_1 = dsdot(N, X, incX, Y, incY);
+if (unlikely(__pyx_t_1 == ((double)-1.0))) __PYX_ERR(0, 48, __pyx_L1_error)
+...
+__pyx_L1_error:;
+  __pyx_gilstate_save = __Pyx_PyGILState_Ensure();
+  __Pyx_WriteUnraisable("gensim.models.word2vec_inner.our_dot_double", ...);
+  __pyx_r = 0;
+  __Pyx_PyGILState_Release(__pyx_gilstate_save);
+```
+
+So a dot product of exactly -1.0 inside the `nogil` training loop would
+acquire the GIL and return **0.0 instead of -1.0**, with no exception
+ever raised (`PyErr_WriteUnraisable` with nothing set is silent).
+`our_dot_float` (`word2vec_inner.pyx:52`) generated the same code. Both
+are on the hot path for every skip-gram / CBOW training step when SciPy's
+BLAS is available, which is the normal case. Exactly -1.0f is rare with
+real weights, so this was a latent silent-wrong-value path rather than a
+visible failure.
+
+The third call site, `init()` at `word2vec_inner.pyx:943`, was harmless:
+it dots `10.0` with `0.01` to detect whether `sdot` returns float or
+double, so it cannot hit the sentinel.
+
+Fix: declare both typedefs `noexcept nogil`, matching every other
+declaration in the file. The calls then compile to a plain cast with no
+branch, no temporary, and no error label. No other `except -1` remains in
+the Cython sources; the surviving `except *` and `except +` clauses in
+`word2vec_corpusfile` are legitimate.
+
+Verified by cythonizing `word2vec_inner.pyx` both ways with Cython 3.3.0
+and diffing the generated C: no warnings either way, the error label and
+`WriteUnraisableException` helper disappear, and the two `dsdot`/`sdot`
+call sites become direct calls.
+
+Note that the extensions must be rebuilt for this to take effect
+(`python setup.py build_ext --inplace`), including `doc2vec_inner`,
+`fasttext_inner` and the `*_corpusfile` modules, which cimport this
+`.pxd`. Their own generated code is unchanged - they call `our_dot`,
+which was already `noexcept`.
+
 ## Building and testing on 3.14
 
 ```bash
@@ -411,5 +467,6 @@ Once it's running, run `./test-3.14.sh`. This runs all the commands listed in CO
 | `0978ee04` | fix: load Doc2Vec models saved by Gensim 3.8.3 (rename `docvecs` -> `dv`, repair `_upconvert_old_d2vkv`) |
 | `8ec1479c` | fix: load Doc2Vec models with string document tags saved by Gensim 3.8.3 (rebuild `_upconvert_old_d2vkv` from `offset2doctag`/`max_rawint`) |
 | `_pending_` | build: bump the docs-only `nltk` pin to 3.10.0                |
+| `_pending_` | fix: drop the bogus `except -1` on the `sdot`/`dsdot` typedefs (a -1.0 dot product silently returned 0.0 and grabbed the GIL) |
 
 Add new rows here as further 3.14 changes land.
