@@ -466,7 +466,7 @@ Once it's running, run `./test-3.14.sh`. This runs all the commands listed in CO
 | `ffb3cd77` | fix: gate background `chunkize` worker on the `fork` start method (fix `cannot pickle 'generator'` on Linux py3.14 `forkserver`) |
 | `0978ee04` | fix: load Doc2Vec models saved by Gensim 3.8.3 (rename `docvecs` -> `dv`, repair `_upconvert_old_d2vkv`) |
 | `8ec1479c` | fix: load Doc2Vec models with string document tags saved by Gensim 3.8.3 (rebuild `_upconvert_old_d2vkv` from `offset2doctag`/`max_rawint`) |
-| `_pending_` | build: bump the docs-only `nltk` pin to 3.10.0                |
-| `_pending_` | fix: drop the bogus `except -1` on the `sdot`/`dsdot` typedefs (a -1.0 dot product silently returned 0.0 and grabbed the GIL) |
+| `a49ac054` | build: bump the docs-only `nltk` pin to 3.10.0                |
+| `9a4fb451` | fix: drop the bogus `except -1` on the `sdot`/`dsdot` typedefs (a -1.0 dot product silently returned 0.0 and grabbed the GIL) |
 
 Add new rows here as further 3.14 changes land.
